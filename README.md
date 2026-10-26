@@ -1,0 +1,91 @@
+# ConnectUni
+
+Photo-first campus friend finder, inspired by Instagram, Hinge and BeReal: verified sign-up with your uni
+email, a people feed matched by Hauptfach (major) and Nebenfach (minor), stories, spontaneous hangouts,
+circles and chats. German and English. Support: support@connect-uni.de.
+
+The whole UI is one React component, [`src/ConnectUni.jsx`](src/ConnectUni.jsx), styled with Tailwind CSS
+and using `lucide-react` icons. It runs on Supabase (see below); with `?demo` in the URL it uses made-up
+students on local React state instead. Portraits and cover photos load from Unsplash, so the app needs an
+internet connection.
+
+## Run it
+
+```bash
+npm install
+npm run dev      # http://localhost:5173
+npm run build    # production build in dist/
+```
+
+## Try it (demo mode, `?demo`)
+
+- **Fast path:** "⚡ Quick Demo Login" at the bottom of the sign-up screen.
+- **Full sign-up:** pick a uni, your Fach, type the part of your uni email before the @ (the domain is set
+  by the uni) and enter **482910**, or tap the floating code badge.
+- "Other uni" searches all 390 German Hochschulen from the official HRK Hochschulkompass list (plus ETH
+  Zürich and Uni Wien) by name, city or short name, e.g. "Bielefeld" or "HSBI". Student addresses on a
+  subdomain (like `@stud.…`) work when you type the full address.
+- Connect 👋 with someone and you get a match, and a message from them shortly after. Chats reply on their
+  own, and other students join your hangouts and groups after a few seconds.
+- Whatever Hauptfach you pick, the app generates classmates, a Fach-only hangout and a fresher group for it.
+
+## Backend (Supabase)
+
+The app runs on real data from Supabase (`src/backend.js`); add `?demo` to the URL to use the made-up
+students instead. The publishable key in `backend.js` is meant to ship in the app: row level security
+decides what each student can read and write.
+
+- **Database:** run `supabase/migrations/20261023120000_init.sql` once in the Supabase SQL Editor. It creates
+  profiles, waves/matches, chats, hangouts, groups, notifications, reports, blocks, the photo bucket and the
+  account-deletion function. Students only see their own university.
+- **Existing database:** if the initial migration is already installed, run the later migrations once:
+  `supabase/migrations/20261026120000_hangout_duration.sql` adds hangout durations. New installs get
+  that change from the initial migration.
+- **Login codes:** Authentication → Email Templates ("Magic Link" and "Confirm signup") must contain
+  `{{ .Token }}` so the email shows the 6-digit code, e.g. subject `Dein ConnectUni-Code: {{ .Token }}`.
+- **Email delivery:** Supabase's built-in mailer only sends to members of your Supabase team and only a few
+  per hour. For real users, send through the IONOS mailbox (Authentication → SMTP Settings): host
+  `smtp.ionos.de`, port `465`, username and sender `support@connect-uni.de`, sender name `ConnectUni`,
+  password = the mailbox password. Then raise the email limit under Authentication → Rate Limits.
+- **Test accounts:** `review@connect-uni.de` (for Apple's review), `test@connect-uni.de` and
+  `loeschtest@connect-uni.de` log in with a password instead of a code and live in their own test university.
+  Create them under Authentication → Users, then run `supabase/review-accounts.sql`, which adds their profiles,
+  a wave, a message, a group invite and hangouts. The steps and the password are in `PRUEFKONTEN.local.md`,
+  which stays out of git.
+
+## iOS app (Capacitor)
+
+```bash
+npm run ios      # builds the web app, copies it into ios/ and opens Xcode
+```
+
+In Xcode, pick a simulator or your iPhone and press Run. On your own iPhone a free Apple account (Personal
+Team) works for 7 days per install; TestFlight and the App Store need the paid Apple Developer Program.
+The bundle ID is `de.connectuni.app`; it can't be changed once the app exists in App Store Connect. The app is
+iPhone-only for now, so the App Store needs no iPad screenshots.
+
+## App Store
+
+[`store/app-store.md`](store/app-store.md) has everything to enter in App Store Connect: texts in German and
+English, keywords, review notes with the test account and the answers for the privacy questionnaire. The
+screenshots are in `store/screenshots/`; `npm run screenshots` makes new ones from the demo mode (needs
+Google Chrome).
+
+The iOS 26.3.1 simulator runtime draws emoji as "?" boxes, which is an Apple bug. Real devices are not affected.
+
+## Using the component elsewhere
+
+`ConnectUni.jsx` only needs React 18+, Tailwind CSS (v3.4+ or v4) and `lucide-react`. It injects its own
+animations and respects notch and home-indicator safe areas. The font (Plus Jakarta Sans) ships with the app
+via `@fontsource-variable/plus-jakarta-sans` in `src/main.jsx`, so nothing loads from Google.
+
+## Before release
+
+- Legal texts (`LEGAL` in `ConnectUni.jsx`) are drafts: fill in name and address where it says [Vorname
+  Nachname] and have them reviewed. They name Supabase (servers in Ireland, EU), IONOS and Unsplash as
+  processors; sign the data processing agreements with Supabase and IONOS. The contact address is
+  `SUPPORT_EMAIL` (support@connect-uni.de).
+- The App Store needs the privacy policy and a support page on the web (`store/app-store.md`).
+- Reports land in the `reports` table (Supabase → Table Editor). The terms promise a review within 24 hours.
+
+The previous minimal design is kept in [`backup/UniConnect.minimal.jsx`](backup/UniConnect.minimal.jsx).

@@ -1,0 +1,6 @@
+node_modules
+dist
+.DS_Store
+
+# Test-account passwords stay on this Mac
+*.local.md

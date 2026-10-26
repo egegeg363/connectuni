@@ -1,0 +1,11 @@
+{
+  "appId": "de.connectuni.app",
+  "appName": "ConnectUni",
+  "webDir": "dist",
+  "backgroundColor": "#fafafa",
+  "plugins": {
+    "Keyboard": {
+      "resize": "native"
+    }
+  }
+}

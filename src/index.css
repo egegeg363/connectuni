@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+body {
+  margin: 0;
+  background: #fafafa;
+}
+
+/* Phones with a notch (viewport-fit=cover): stop scrolled content from showing under the status bar.
+   Sticky headers pad themselves; this covers screens without one. Overlays (z-40 and up) stay on top. */
+@media (width < 64rem) {
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 35;
+    height: env(safe-area-inset-top, 0px);
+    background: #fafafa;
+  }
+}
+
+/* iOS app only (see main.jsx): app-like touch behaviour. */
+html.native {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+html.native :is(input, textarea) {
+  -webkit-user-select: text;
+  user-select: text;
+}
+html.native button:active {
+  opacity: 0.6;
+}
